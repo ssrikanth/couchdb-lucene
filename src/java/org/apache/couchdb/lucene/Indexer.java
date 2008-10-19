@@ -57,6 +57,37 @@ Indexer
         System.out.println("true");
         System.out.flush();
     }
+    
+    /*
+        Technically, this will have no effect with the default directory setting
+        of having the Lucene index inside the .dbname_design directory because CouchDB
+        already nukes it when the settings change. It should be safe to call anyway.
+    */
+    public static void
+    delete(JSONObject notice)
+    throws Exception
+    {
+        IndexWriter writer = null;
+
+        try
+        {
+            String dbname = notice.getString("db");
+            String group = notice.getString("group");
+            writer = createIndexWriter(dbname, notice.getString("current_seq"));
+            BooleanQuery q = new BooleanQuery();
+            q.add(new TermQuery(new Term(Config.DB_FIELD, dbname)), BooleanClause.Occur.MUST);
+            q.add(new TermQuery(new Term(Config.GROUP_FIELD, group)), BooleanClause.Occur.MUST);
+            writer.deleteDocuments(q);
+        }
+        
+        finally
+        {
+            closeIndexWriter(writer, notice.getString("db"), "0");
+        }
+        
+        System.out.println("true");
+        System.out.flush();        
+    }
  
     private static void
     removeDocuments(IndexWriter writer, String dbname, String group, JSONArray views, JSONArray toRemove)
@@ -105,7 +136,7 @@ Indexer
     
     private static IndexWriter
     createIndexWriter(String dbname, String expected_seq)
-    throws IOException
+    throws IOException, IllegalAccessException, InstantiationException
     {
         File idxDir = Config.getIndexDirectory(dbname);
         boolean exists = IndexReader.indexExists(idxDir);
@@ -127,8 +158,7 @@ Indexer
             }
         }
 
-        Analyzer analyzer = new StandardAnalyzer();   
-        return new IndexWriter(idxDir, analyzer, !exists, IndexWriter.MaxFieldLength.UNLIMITED);
+        return new IndexWriter(idxDir, Config.getAnalyzer(), !exists, IndexWriter.MaxFieldLength.UNLIMITED);
     }
     
     private static void

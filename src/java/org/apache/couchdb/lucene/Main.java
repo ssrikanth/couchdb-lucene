@@ -37,6 +37,10 @@ Main
                 {
                     Indexer.index(notice);
                 }
+                else if(action.equals("delete"))
+                {
+                    Indexer.delete(notice);
+                }
                 else if(action.equals("query"))
                 {
                     QueryRunner.run(notice);

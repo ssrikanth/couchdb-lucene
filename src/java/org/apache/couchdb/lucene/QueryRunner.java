@@ -59,8 +59,7 @@ QueryRunner
             }
             
             searcher = new IndexSearcher(idxDir.toString());
-            Analyzer analyzer = new StandardAnalyzer();
-            QueryParser parser = new QueryParser(Config.VALUE_FIELD, analyzer);
+            QueryParser parser = new QueryParser(Config.VALUE_FIELD, Config.getAnalyzer());
             Query uq = parser.parse(qstring);
             
             BooleanQuery q = new BooleanQuery();
@@ -68,8 +67,6 @@ QueryRunner
             q.add(new TermQuery(new Term(Config.GROUP_FIELD, group)), BooleanClause.Occur.MUST);
             q.add(new TermQuery(new Term(Config.VIEW_FIELD, view)), BooleanClause.Occur.MUST);
             q.add(uq, BooleanClause.Occur.SHOULD);
-
-            System.err.println("Query: " + q);
 
             TopDocs hits = searcher.search(q, null, skip + count);
 

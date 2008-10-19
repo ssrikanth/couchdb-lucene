@@ -12,4 +12,4 @@ for jar in `ls $LIB/*.jar`; do
   CLASSPATH=${CLASSPATH}:$jar;
 done
 
-java -cp "$CLASSPATH" $MAIN_CLASS
+java -cp "$CLASSPATH" $@ $MAIN_CLASS
