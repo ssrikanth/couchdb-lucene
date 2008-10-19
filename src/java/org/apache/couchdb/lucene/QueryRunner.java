@@ -47,8 +47,15 @@ QueryRunner
             File idxDir = Config.getIndexDirectory(dbname);
             if(!IndexReader.indexExists(idxDir))
             {
-                System.out.println("No index found for db: " + dbname);
+                JSONStringer out = new JSONStringer();
+                out.array()
+                    .value(404)
+                    .value("not_found")
+                    .value("missing")
+                .endArray();
+                System.out.println(out.toString());
                 System.out.flush();
+                return;
             }
             
             searcher = new IndexSearcher(idxDir.toString());

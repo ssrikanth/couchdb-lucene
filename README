@@ -13,7 +13,7 @@ Download this package and build the jar as such:
     $ cd couchdb-lucene
     $ ant
 
-Edit your couchdb's local.ini to look something like:
+Edit your couchdb's local.ini to look something like: (make sure to change /path/to/)
 
     ; CouchDB Configuration Settings
 
@@ -35,7 +35,7 @@ Edit your couchdb's local.ini to look something like:
     index_servers={couch_index_servers, start_link, []}
 
     [index_servers]
-    fti=/usr/local/src/couchdb-lucene/bin/couchdb-lucene-index
+    fti=/path/to/couchdb-lucene/bin/couchdb-lucene-index
 
     [httpd_db_handlers]
     _index = {couch_httpd_view, handle_index_req}
