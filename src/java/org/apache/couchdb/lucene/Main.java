@@ -22,18 +22,17 @@ Main
 
         while((data = input.readLine()) != null)
         {
-            if(data.equals("[\"reset\"]"))
-            {
-                System.out.println("true");
-                System.out.flush();
-                continue;
-            }
-            
             try
             {
                 JSONObject notice = new JSONObject(data);
                 String action = notice.getString("action");
-                if(action.equals("index"))
+                
+                if(action.equals("reset"))
+                {
+                    System.out.println("true");
+                    System.out.flush();
+                }
+                else if(action.equals("index"))
                 {
                     Indexer.index(notice);
                 }
