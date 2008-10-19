@@ -1,0 +1,46 @@
+
+CouchDB-Lucene View-Indexer Version
+===================================
+
+This is an example indexer capable of indexing via the index-server interface. For this to
+work you must download and run the index_server branch of my couchdb github repo at:
+
+    http://github.com/davisp/couchdb/tree/index_server
+
+Download this package and build the jar as such:
+
+    $ git clone git://github.com/davisp/couchdb-lucene.git couchdb-lucene
+    $ cd couchdb-lucene
+    $ ant
+
+Edit your couchdb's local.ini to look something like:
+
+    ; CouchDB Configuration Settings
+
+    ; Custom settings should be made in this file. They will override settings
+    ; in default.ini, but unlike changes made to default.ini, this file won't be
+    ; overwritten on server upgrade.
+
+    [couchdb]
+    ;max_document_size = 4294967296 ; bytes
+
+    [httpd]
+    ;port = 5984
+    ;bind_address = 127.0.0.1
+
+    [log]
+    level = debug
+
+    [daemons]
+    index_servers={couch_index_servers, start_link, []}
+
+    [index_servers]
+    fti=/usr/local/src/couchdb-lucene/bin/couchdb-lucene-index
+
+    [httpd_db_handlers]
+    _index = {couch_httpd_view, handle_index_req}
+
+Assuming everything worked, you should now be able to query the server with the url:
+
+    http://127.0.0.1:5984/db_name/_index/fti/view_name/map_name?q="query"
+
