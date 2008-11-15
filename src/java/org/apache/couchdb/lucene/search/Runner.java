@@ -60,7 +60,14 @@ Runner
                 QueryParser parser = new QueryParser(Config.DEFAULT, analyzer);
                 Query q = parser.parse(query);
                 System.err.println("Before: " + q);
-                q = Expander.expand(reader, q, req.getJSONObject("query").optJSONObject("fields"));
+                
+                JSONObject fields = null;
+                if(req.getJSONObject("query").has("fields"))
+                {
+                    fields = new JSONObject(req.getJSONObject("query").getString("fields"));
+                }
+
+                q = Expander.expand(reader, q, fields);
                 System.err.println("After: " + q);
 
                 TopDocs hits = searcher.search(q, null, offset + count, new Sort(Config.DOCID));

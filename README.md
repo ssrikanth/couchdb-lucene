@@ -16,7 +16,7 @@ Dependancies
 1. Ant - I've got 1.6.5 installed
 1. Git - No idea on a version
 1. Lucene - lucene-core-2.4.0.jar (Included)
-1. CouchDB branch [external2][external2]
+1. CouchDB branch [action2][action2]
 
 Installation
 ------------
@@ -75,7 +75,7 @@ on a huge dataset (probably not too well).
 
 To try your first query, try fetching a url like:
 
-    http://127.0.0.1:5984/dbname/_external/fti?q="body/field:my_query"
+    http://127.0.0.1:5984/dbname/_external/fti?q=body/field:my_query
 
 This would match a document that had a structure like:
 
@@ -105,7 +105,7 @@ Would be indexed with the following fields:
 * ``fruit/$2``
 
 So, to see if "apple" is the second element of the fruit array, the query
-would be ``?q="fruit/$1:apple"``.
+would be ``?q=fruit/$1:apple``.
 
 Field Expansion
 ---------------
@@ -114,7 +114,7 @@ Obviously, only being able to test individual members of an array or
 specifically named fields wouldn't be very useful. But, we've got a trick up
 our sleeves:
 
-    ?q="alias_foo:apple"&fields={"alias_foo":"fruit/*"}
+    ?q=alias_foo:apple&fields={"alias_foo":"fruit/*"}
 
 Will search for apple in all fields below fruit. There's nothing special about
 using ``alias_foo`` as the field name. The code only looks at each field
@@ -140,4 +140,4 @@ messages returned.
 
 [couchdb]: http://incubator.apache.org/couchdb/ "Apache CouchDB"
 [lucene]: http://lucene.apache.org/java/docs/index.html "Java Lucene"
-[external2]: http://github.com/davisp/couchdb/tree/external2 "CouchDB External2 Branch"
+[action2]: http://github.com/jchris/couchdb/tree/action2 "CouchDB Action2 Branch"
