@@ -3,7 +3,7 @@
 MAIN_CLASS=org.apache.couchdb.lucene.search.Runner
 
 BIN=`dirname "$0"`
-JSEARCH_HOME="/usr/local/src/jsearch/"
+JSEARCH_HOME="/usr/local/src/couchdb-lucene/"
 LIB="$JSEARCH_HOME/lib"
 JSEARCH="$JSEARCH_HOME/build/jsearch-0.1-dev.jar"
 
