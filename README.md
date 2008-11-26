@@ -28,7 +28,7 @@ Ant installed.
     $ cd couchdb-lucene
     $ ant
 
-You'll want to make sure and adjust JSEARCH_HOME in both ``bin/jsearch-index``
+You'll want to make sure and adjust JSEARCH\_HOME in both ``bin/jsearch-index``
 and ``bin/jsearch-query`` to match where you've installed the libraries.
 
 Configuration
