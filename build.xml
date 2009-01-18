@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 
-<project name="jsearch" default="compile">
+<project name="jsearch" default="jar">
 
     <!-- ====================================================== -->
     <!-- Meatadata                                              -->
     <!-- ====================================================== -->
-    <property name="name" value="jsearch" />
+    <property name="name" value="couchdb-lucene" />
     <property name="version" value="0.1-dev" />
     <property name="final.name" value="${name}-${version}" />
     <property name="final.name.test" value="${name}-${version}-test" />
@@ -30,9 +30,21 @@
     <property name="javac.args" value="" />
 
     <!-- ====================================================== -->
+    <!-- Lib Names                                              -->
+    <!-- ====================================================== -->
+    <property name="libs.lucene" value="${dir.lib}/lucene-core-2.4.0.jar" />
+
+    <!-- ====================================================== -->
     <!-- Build Options                                          -->
     <!-- ====================================================== -->
     <property name="build.encoding" value="ISO-8859-1" />
+    
+    <!-- ====================================================== -->
+    <!-- Jar Options                                            -->
+    <!-- ====================================================== -->
+    <property name="jar.class.main" value="org.apache.couchdb.lucene.Main" />
+    <property name="jar.impl.title" value="${final.name}" />
+    <property name="jar.impl.version" value="${version}" />
     
     <!-- ====================================================== -->
     <!-- Class Path Configuration                               -->
@@ -67,36 +79,33 @@
             <compilerarg line="${javac.args}" />
             <classpath refid="classpath" />
         </javac>
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Expand Lucene Jar                                                  -->
+    <!-- ================================================================== -->
+    <target name="expand">
+        <unzip src="${libs.lucene}" dest="${dir.build.classes}">
+            <patternset>
+                <include name="**/*.class" />
+            </patternset>
+        </unzip>
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Build Jar                                                          -->
+    <!-- ================================================================== -->
+    <target name="jar" depends="compile,expand">
         <jar jarfile="${dir.build}/${final.name}.jar"
             basedir="${dir.build.classes}"
             excludes="**/test*">
             <manifest>
-                <section name="org/couchdb/jsearch">
-                    <attribute name="Implementation-Title" value="jsearch" />
-                    <attribute name="Implementation-Version" value="${version}" />
-                    <attribute name="Implementation-Vendor" value="IBM" />
+                <attribute name="Main-Class" value="${jar.class.main}" />
+                <section name="org/apache/couchdb/lucene">
+                    <attribute name="Implementation-Title" value="${jar.impl.title}" />
+                    <attribute name="Implementation-Version" value="${jar.impl.version}" />
                 </section>
             </manifest>
-        </jar>
-    </target>
-
-    <!-- ================================================================== -->
-    <!-- Compile Tests                                                      -->
-    <!-- ================================================================== -->
-    <target name="test" depends="compile">
-        <javac encoding="${build.encoding}"
-                srcdir="${dir.src.test}"
-                destdir="${dir.build.classes}"
-                debug="${javac.debug}"
-                optimize="${javac.optimize}"
-                target="${javac.version}"
-                source="${javac.version}"
-                deprecation="${javac.deprecation}">
-            <compilerarg line="${javac.args}" />
-            <classpath refid="classpath" />
-        </javac>
-        <jar jarfile="${dir.build}/${final.name.test}.jar"
-            basedir="${dir.build.classes}">
         </jar>
     </target>
     
@@ -104,7 +113,7 @@
     <!-- Clean.                                                             -->
     <!-- ================================================================== -->
     <target name="clean">
-        <delete dir="${build.dir}" />
+        <delete dir="${dir.build}" />
     </target>
 
 </project>
