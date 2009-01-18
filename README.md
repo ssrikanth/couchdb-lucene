@@ -2,21 +2,14 @@
 CouchDB-Lucene
 ==============
 
-This is a preliminary implementation of indexing a [CouchDB][couchdb]
-database via [Lucene][lucene]. Some major selling points for the project
-include:
-
-* Arbitrary structural indexing
-* Field expansion (Searching fields selected by a second Lucene query)
+This is a preliminary implementation of a [Lucene][lucene] indexer for [CouchDB][couchdb].
 
 Dependancies
 ------------
 
-1. Java - Probably requires at least 1.5.something
-1. Ant - I've got 1.6.5 installed
-1. Git - No idea on a version
-1. Lucene - lucene-core-2.4.0.jar (Included)
-1. CouchDB branch [action2][action2]
+1. Java - Probably requires 1.5.something
+1. CouchDB - trunk
+1. Git
 
 Installation
 ------------
@@ -28,119 +21,73 @@ Ant installed.
     $ cd couchdb-lucene
     $ ant
 
-You'll want to make sure and adjust JSEARCH\_HOME in both ``bin/jsearch-index``
-and ``bin/jsearch-query`` to match where you've installed the libraries.
-
 Configuration
 -------------
 
-Assuming the build worked, you'll want to edit your local.ini config file for
-CouchDB to setup the indexer and searchers. Here's an example local.ini:
+Assuming the build worked, you'll want to edit your local.ini config file for CouchDB to setup the indexer and query processes. You'll need to add the following sections:
 
-    ; CouchDB Configuration Settings
-        
-    [couchdb]
-    ;max_document_size = 4294967296 ; bytes
-    
-    [httpd]
-    ;port = 5984
-    ;bind_address = 127.0.0.1
-    
-    [log]
-    level = debug
-    
     [update_notification]
-    jsearch_indexer=/path/to/couchdb-lucene/bin/jsearch-index
-    
-    [daemons]
-    external={couch_external_manager, start_link, []}
-    
-    [httpd_db_handlers]
-    _external = {couch_httpd_external, handle_external_req}
+    fti_indxer = /path/to/java -jar /path/to/couchdb-lucene/build/couchdb-lucene-0.1-dev.jar index
     
     [external]
-    fti={"/path/to/couchdb-lucene/bin/jsearch-query", 1}
+    fti = /path/to/java -jar /path/to/couchdb-lucene/build/couchdb-lucene-0.1-dev.jar query
+    
+    [httpd_db_handlers]
+    _fti = {couch_httpd_external, handle_external_req, <<"fti">>}
 
-Make sure that everything after the [log] section exists (and that you've
-replaced /path/to/couchdb-lucene).
+A couple things to note:
 
-Hopefully that's all there is to setting things up. If you have any problems
-shoot me an email.
+1. Remember to change /path/to/java and /path/to/couchdb-lucene with paths appropriate to your system
+1. The <<"fti">> specification in the [httpd\_db_handlers] section must match the entry in the [external] section.
 
-Usage
------
+Indexing
+--------
 
-To have your database index you'll need to trigger an update notification.
-This can be achieved by simply saving a document in Futon (without necessarily
-editing anything). After this, the indexer should take off and index the db.
-I haven't tested this on a large dataset, so I'm not certain how it'll perform
-on a huge dataset (probably not too well).
+The basic idea behind indexing is that any design doc can specify a list of views to index. Views that are indexed must emit(doc.\_id, string\_value). You can specify as many views as you want for indexing.
 
-To try your first query, try fetching a url like:
-
-    http://127.0.0.1:5984/dbname/_external/fti?q=body/field:my_query
-
-This would match a document that had a structure like:
+Example _design/doc:
 
     {
-        "_id": "foo",
-        "_rev": "220130",
-        "body": {
-            "field": "some text including my_query"
-        }
+        "_id": "_design/test",
+        "_rev": "232924",
+        "views": {
+            "foo": {
+                "map": "function(doc) {if(doc.body) emit(doc._id, doc.body);}"
+            }
+        },
+        "lucene": ["foo"]
     }
 
-Notice that ``body/field`` refers to the ``field`` child of the ``body``
-member. You can specify array indexes as well using a ``$\d+`` pattern. As in:
+*IMPORTANT*
+1. You *must* emit(doc.\_id, value\_to\_index). If you don't emit a key that is the docid, nothing will get indexed.
+1. You *must* specify a "lucene" member in your _design docs that is an array of views to index.
+1. That should hopefully be it.
 
-    {
-        "_id": "bar",
-        "_rev": "9831221",
-        "fruit": ["apple", "orange", "strawberry"]
-    }
+Querying
+--------
 
-Would be indexed with the following fields:
+Parameters:
 
-* ``_id``
-* ``_rev``
-* ``fruit/$0``
-* ``fruit/$1``
-* ``fruit/$2``
+1. `q`: A query string. This is processed by Lucene's [QueryParser][parser]
+1. `limit`: Limit the number of results returned.
+1. `skip`: Skip over the first N results.
 
-So, to see if "apple" is the second element of the fruit array, the query
-would be ``?q=fruit/$1:apple``.
 
-Field Expansion
----------------
+Examples:
 
-Obviously, only being able to test individual members of an array or
-specifically named fields wouldn't be very useful. But, we've got a trick up
-our sleeves:
+* `http://127.0.0.1:5984/db_name/_fti?q="query terms"`
+* `http://127.0.0.1:5984/db_name/_fti?q="foo bar"&limit=2&skip=3`
 
-    ?q=alias_foo:apple&fields={"alias_foo":"fruit/*"}
+Results:
 
-Will search for apple in all fields below fruit. There's nothing special about
-using ``alias_foo`` as the field name. The code only looks at each field
-specified in the input query and if a member of the same name exists in the
-fields object, the corresponding query is run and the original query becomes
-an OR conjunction of all found fields.
+`{"rows":2,"docs":[{"docid":"test","score":0.26010897755622864},{"docid":"test2","score":0.2229505479335785}]}`
 
-After Now
----------
+Feedback
+--------
 
-Things on the todo list:
+I'm looking for feedback on this whole Lucene business. So use it and report back with any errors or tracebacks or other generally unexpected behavior.
 
-1. Number parsing needs to be added to the query side.
-1. Configuration work. Need to flesh out how to specify a configuration in a
-design document and what exactly should be configurable.
-1. Efficiency work. There are quite a few places that need to be cleaned up
-and made to not be so blatantly inefficient.
-1. The field expansion may need to be re-jiggered a bit. I sent an email to
-the Lucene ML but haven't gotten a reply yet.
-1. Stability work. I need people to start abusing this and the external branch
-to see if there are common errors showing up that should get informative
-messages returned.
 
 [couchdb]: http://incubator.apache.org/couchdb/ "Apache CouchDB"
 [lucene]: http://lucene.apache.org/java/docs/index.html "Java Lucene"
-[action2]: http://github.com/jchris/couchdb/tree/action2 "CouchDB Action2 Branch"
+[parser]: http://lucene.apache.org/java/2_4_0/api/core/org/apache/lucene/queryParser/QueryParser.html "QueryParser"

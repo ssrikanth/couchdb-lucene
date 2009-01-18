@@ -43,8 +43,8 @@ QueryRunner
                     JSONObject req = new JSONObject(data);
                     String dbname = req.getJSONObject("info").getString("db_name");
                     String query = req.getJSONObject("query").getString("q");
-                    int count = req.getJSONObject("query").optInt("count", 25);
-                    int offset = req.getJSONObject("query").optInt("offset", 0);
+                    int count = req.getJSONObject("query").optInt("limit", 25);
+                    int offset = req.getJSONObject("query").optInt("skip", 0);
                 
                     File idxDir = new File(Config.IDXDIR + File.separator + dbname);
                     if(!IndexReader.indexExists(idxDir))
