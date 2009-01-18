@@ -62,8 +62,9 @@ QueryRunner
                     QueryParser parser = new QueryParser(Config.DATA, analyzer);
                     Query q = parser.parse(query);
                     
-                    if(view != null)
+                    if(view != null && view.length() > 0)
                     {
+                        System.err.println("Adding view restriction: " + view);
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new TermQuery(new Term(Config.VIEW, view)), Occur.MUST);
                         bq.add(q, Occur.MUST);
@@ -83,6 +84,7 @@ QueryRunner
                         Document d = reader.document(hits.scoreDocs[i].doc);
                         out.object()
                             .key("docid").value(new String(d.get(Config.DOCID)))
+                            .key("view").value(new String(d.get(Config.VIEW)))
                             .key("score").value(hits.scoreDocs[i].score)
                         .endObject();
                     }
