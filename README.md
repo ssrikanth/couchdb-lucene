@@ -45,7 +45,7 @@ Indexing
 
 The basic idea behind indexing is that any design doc can specify a list of views to index. Views that are indexed must emit(doc.\_id, string\_value). You can specify as many views as you want for indexing.
 
-Example \_design/doc:
+Example \_design document:
 
     {
         "_id": "_design/test",
