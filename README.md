@@ -38,14 +38,14 @@ Assuming the build worked, you'll want to edit your local.ini config file for Co
 A couple things to note:
 
 1. Remember to change /path/to/java and /path/to/couchdb-lucene with paths appropriate to your system
-1. The <<"fti">> specification in the [httpd\_db_handlers] section must match the entry in the [external] section.
+1. The `<<"fti">>` specification in the \[httpd\_db\_handlers\] section must match the entry in the \[external\] section.
 
 Indexing
 --------
 
 The basic idea behind indexing is that any design doc can specify a list of views to index. Views that are indexed must emit(doc.\_id, string\_value). You can specify as many views as you want for indexing.
 
-Example _design/doc:
+Example \_design/doc:
 
     {
         "_id": "_design/test",
@@ -60,7 +60,7 @@ Example _design/doc:
 
 *IMPORTANT*
 1. You *must* emit(doc.\_id, value\_to\_index). If you don't emit a key that is the docid, nothing will get indexed.
-1. You *must* specify a "lucene" member in your _design docs that is an array of views to index.
+1. You *must* specify a "lucene" member in your \_design docs that is an array of views to index.
 1. That should hopefully be it.
 
 Querying
