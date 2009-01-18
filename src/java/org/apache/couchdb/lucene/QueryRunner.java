@@ -11,11 +11,14 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import org.json.JSONObject;
@@ -43,6 +46,7 @@ QueryRunner
                     JSONObject req = new JSONObject(data);
                     String dbname = req.getJSONObject("info").getString("db_name");
                     String query = req.getJSONObject("query").getString("q");
+                    String view = req.getJSONObject("query").optString("v");
                     int count = req.getJSONObject("query").optInt("limit", 25);
                     int offset = req.getJSONObject("query").optInt("skip", 0);
                 
@@ -57,6 +61,15 @@ QueryRunner
                     Analyzer analyzer = new StandardAnalyzer();
                     QueryParser parser = new QueryParser(Config.DATA, analyzer);
                     Query q = parser.parse(query);
+                    
+                    if(view != null)
+                    {
+                        BooleanQuery bq = new BooleanQuery();
+                        bq.add(new TermQuery(new Term(Config.VIEW, view)), Occur.MUST);
+                        bq.add(q, Occur.MUST);
+                        q = bq;
+                    }
+                    
                     TopDocs hits = searcher.search(q, null, offset + count, new Sort(Config.DOCID));
                 
                     JSONStringer out = new JSONStringer();

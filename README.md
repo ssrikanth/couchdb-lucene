@@ -69,14 +69,16 @@ Querying
 Parameters:
 
 1. `q`: A query string. This is processed by Lucene's [QueryParser][parser]
+1. `v`: Limit the view results to a specific view output.
 1. `limit`: Limit the number of results returned.
 1. `skip`: Skip over the first N results.
 
 
 Examples:
 
-* `http://127.0.0.1:5984/db_name/_fti?q="query terms"`
-* `http://127.0.0.1:5984/db_name/_fti?q="foo bar"&limit=2&skip=3`
+* `http://127.0.0.1:5984/db_name/_fti?q=query+terms`
+* `http://127.0.0.1:5984/db_name/_fti?q=foo+bar&limit=2&skip=3`
+* `http://127.0.0.1:5984/db_name/_fti?q=baz&v=test/foo`
 
 Results:
 
