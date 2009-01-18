@@ -37,12 +37,11 @@ QueryRunner
             while((data = input.readLine()) != null)
             {
                 String ret = null ;
-                System.err.println(data);
 
                 try
                 {
                     JSONObject req = new JSONObject(data);
-                    String dbname = req.getString("db");
+                    String dbname = req.getJSONObject("info").getString("db_name");
                     String query = req.getJSONObject("query").getString("q");
                     int count = req.getJSONObject("query").optInt("count", 25);
                     int offset = req.getJSONObject("query").optInt("offset", 0);
@@ -84,7 +83,7 @@ QueryRunner
                     ex.printStackTrace(System.err);
                     ret = new JSONStringer().object()
                                 .key("code").value(500)
-                                .key("body").value("Failed to execute query.")
+                                .key("body").value("Failed to execute query: " + ex.getMessage())
                             .endObject().toString();
                 }
         

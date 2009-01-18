@@ -6,7 +6,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -138,50 +141,18 @@ extends Thread
             this.close();
         }
     }
-
-    private void
-    close()
-    {
-        try
-        {
-            if(this.writer != null) this.writer.close();
-            if(this.directory != null) this.directory.close();
-            
-            this.writer = null;
-            this.directory = null;
-        }
-        
-        catch(Exception exc)
-        {
-            System.err.println("Indexer thread for db: " + this.db.getName() + " caught exception when closing.");
-            exc.printStackTrace();
-        }
-        
-        try
-        {
-            if(this.deleted())
-            {
-                this.delete(this.idxDir);
-            }
-        }
-        
-        catch(Exception exc)
-        {
-            System.err.println("Failed to delete index directory: " + this.idxDir.toString());
-            exc.printStackTrace();
-        }
-    }
     
     private List<String>
     getViews()
-    throws Exception
+    throws IOException, JSONException, NoSuchAlgorithmException
     {
         List indexViews = new ArrayList<String>();
         JSONObject designDocs = this.db.getDesignDocs();
         JSONArray rows = designDocs.getJSONArray("rows");
         for(int i = 0; i < rows.length(); i++)
         {
-            JSONArray views = rows.getJSONObject(i).getJSONObject("doc").optJSONArray("lucene");
+            JSONObject ddoc = rows.getJSONObject(i).getJSONObject("doc");
+            JSONArray views = ddoc.optJSONArray("lucene");
             if(views == null)
             {
                 continue;
@@ -189,8 +160,20 @@ extends Thread
             
             for(int j = 0; j < views.length(); j++)
             {
-                String ddocid = rows.getJSONObject(i).getString("id").substring(8);
-                indexViews.add(ddocid + "/" + views.getString(j));
+                String vname = views.getString(j);
+                String ddocid = ddoc.getString("_id").substring(8);
+                JSONObject view = ddoc.getJSONObject("views").optJSONObject(vname);
+                if(view == null)
+                {
+                    continue;
+                }
+                
+                if(this.seqids.signatureChanged(vname, view.getString("map")))
+                {
+                    this.writer.deleteDocuments(new Term(Config.VIEW, vname));
+                }
+                
+                indexViews.add(ddocid + "/" + vname);
             }
         }
         
@@ -228,11 +211,10 @@ extends Thread
                 Document doc = documents.get(docid);
                 if(doc == null)
                 {
-                    System.err.println("Creating document for: " + docid);
                     doc = new Document();
                     doc.add(new Field(Config.DOCID, docid, Field.Store.YES, Field.Index.NOT_ANALYZED));
                     doc.add(new Field(Config.VIEW, view, Field.Store.YES, Field.Index.NOT_ANALYZED));
-                    
+                    documents.put(docid, doc);
                 }
                 String val = curr.get("value").toString();
                 doc.add(new Field(Config.DATA, val, Field.Store.NO, Field.Index.ANALYZED));
@@ -241,8 +223,8 @@ extends Thread
             // Add docs to index
             this.updateDocuments(view, documents);
             
-            // Keep state
-            this.seqids.setSequence(view, updates.getJSONObject(updates.length()-1).getInt("key"));
+            // Keep state - Notice the + 1 at the end.
+            this.seqids.setSequence(view, updates.getJSONObject(updates.length()-1).getInt("key") + 1);
             
             // Next set
             updates = db.nextBySequence(this.seqids.getSequence(view), Config.BULKSIZE).getJSONArray("rows");
@@ -283,6 +265,39 @@ extends Thread
     }
     
     private void
+    close()
+    {
+        try
+        {
+            if(this.writer != null) this.writer.close();
+            if(this.directory != null) this.directory.close();
+            
+            this.writer = null;
+            this.directory = null;
+        }
+        
+        catch(Exception exc)
+        {
+            System.err.println("Indexer thread for db: " + this.db.getName() + " caught exception when closing.");
+            exc.printStackTrace();
+        }
+        
+        try
+        {
+            if(this.deleted())
+            {
+                this.delete(this.idxDir);
+            }
+        }
+        
+        catch(Exception exc)
+        {
+            System.err.println("Failed to delete index directory: " + this.idxDir.toString());
+            exc.printStackTrace();
+        }
+    }
+    
+    private void
     delete(File dir)
     throws Exception
     {
@@ -306,11 +321,27 @@ extends Thread
     {
         private File fname = null;
         private Map<String, Integer> ids = null;
+        private Map<String, String> sigs = null;
         
         public SequenceIds(String fname)
         {
             this.fname = new File(fname);
             this.read();
+        }
+        
+        public boolean
+        signatureChanged(String view, String definition)
+        throws NoSuchAlgorithmException
+        {
+            String curr = this.sigs.get(view);
+            String next = this.digest(definition);
+            if(curr == null || !curr.equalsIgnoreCase(next))
+            {
+                this.ids.put(view, new Integer(0));
+                this.sigs.put(view, next);
+                return true;
+            }
+            return false;
         }
         
         public int
@@ -336,6 +367,7 @@ extends Thread
             if(!this.fname.exists())
             {
                 this.ids = new HashMap<String, Integer>();
+                this.sigs = new HashMap<String, String>();
                 return;
             }
             
@@ -343,7 +375,8 @@ extends Thread
             {    
                 FileInputStream fis = new FileInputStream(this.fname);
                 ObjectInputStream ois = new ObjectInputStream(fis);
-                this.ids = (HashMap) ois.readObject();
+                this.ids = (HashMap<String, Integer>) ois.readObject();
+                this.sigs = (HashMap<String, String>) ois.readObject();
                 ois.close();
                 fis.close();
             }
@@ -363,6 +396,7 @@ extends Thread
                 FileOutputStream fos = new FileOutputStream(this.fname);
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
                 oos.writeObject(this.ids);
+                oos.writeObject(this.sigs);
                 oos.close();
                 fos.close();
             }
@@ -372,6 +406,16 @@ extends Thread
                 System.err.println("Failed to write sequence ids to: " + fname);
                 exc.printStackTrace();
             }
+        }
+        
+        private String
+        digest(String data)
+        throws NoSuchAlgorithmException
+        {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            md.update(data.getBytes());
+            BigInteger bi = new BigInteger(md.digest());
+            return bi.toString(16);
         }
     }
 }

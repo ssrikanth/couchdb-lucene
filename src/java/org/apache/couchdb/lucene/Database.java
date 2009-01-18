@@ -80,7 +80,7 @@ Database
     view(String view, List<String> docids)
     throws IOException, JSONException, MalformedURLException
     {
-        URL loc = new URL(this.url, "/" + this.dbname + "/_view/" + view);
+        URL loc = new URL(this.url, "/" + this.dbname + "/_view/" + view + "?reduce=false");
         
         JSONStringer out = new JSONStringer();
         out.object().key("keys").array();

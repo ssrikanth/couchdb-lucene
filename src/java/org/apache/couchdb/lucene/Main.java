@@ -11,9 +11,7 @@ Main
             System.err.println("No runner specified.");
             System.exit(-1);
         }
-        
-        System.err.println(args[0]);
-        
+
         if(args[0].equalsIgnoreCase("index"))
         {
             IndexRunner.main();
