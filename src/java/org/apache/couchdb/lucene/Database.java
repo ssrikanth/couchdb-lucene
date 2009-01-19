@@ -21,29 +21,13 @@ import org.json.JSONStringer;
 public class
 Database
 {
-    private URL url = null;
-    private String dbname = null;
+    private final URL url;
+    private final String dbname;
     
     public Database(URL url, String dbname)
     {
         this.url = url;
         this.dbname = dbname;
-    }
-
-    public String
-    getName()
-    {
-        return this.dbname;
-    }
-
-    public JSONObject
-    getDesignDocs()
-    throws IOException, JSONException, MalformedURLException
-    {
-        String path = "/" + this.dbname
-                    + "/_all_docs?startkey=\"_design/\"&endkey=\"_design/\\u9999\"&include_docs=true";
-        String data = fetch(new URL(this.url, path));
-        return new JSONObject(data);
     }
 
     public JSONObject
@@ -56,23 +40,13 @@ Database
     }
     
     public JSONObject
-    getDoc(String docid, String revision)
+    nextBySequence(int curr_seq, int last_seq, int count)
     throws IOException, JSONException, MalformedURLException
     {
-        docid = URLEncoder.encode(docid, "UTF-8");
-        String data = fetch(new URL(this.url, "/" + this.dbname + "/" + docid + "?rev=" + revision));
-        if(data.replaceAll("\\s\\t\\r ", "").length() == 0)
-        {
-            System.err.println("Bad document: " + docid + " " + revision);
-        }
-        return new JSONObject(data);
-    }
-    
-    public JSONObject
-    nextBySequence(int curr_seq, int count)
-    throws IOException, JSONException, MalformedURLException
-    {
-        URL loc = new URL(this.url, "/" + this.dbname + "/_all_docs_by_seq?startkey=" + curr_seq + "&limit=" + count);
+        String path = "/" + this.dbname + "/_all_docs_by_seq?startkey="
+                        + curr_seq + "&endkey=" + last_seq + "&limit=" + count;
+
+        URL loc = new URL(this.url, path);
         return new JSONObject(fetch(loc));
     }
 
