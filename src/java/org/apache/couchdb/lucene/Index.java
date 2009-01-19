@@ -33,7 +33,8 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.LockObtainFailedException;
+import org.apache.lucene.store.NIOFSDirectory;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -55,7 +56,7 @@ Index
     private SequenceId seqid = null;
     
     public Index(String dbname)
-    throws IOException
+    throws CorruptIndexException, IOException, LockObtainFailedException
     {
         this.dbname = dbname;
 
@@ -63,7 +64,7 @@ Index
         if(!this.idxDir.exists()) this.idxDir.mkdirs();
         
         this.db = new Database(new URL(Config.DBURI), this.dbname);
-        this.directory = FSDirectory.getDirectory(this.idxDir);
+        this.directory = NIOFSDirectory.getDirectory(this.idxDir);
 
         boolean exists = IndexReader.indexExists(this.directory);
         
@@ -72,12 +73,22 @@ Index
             IndexWriter.unlock(this.directory);
         }
 
-        this.analyzer = new StandardAnalyzer();        
-        this.writer = new IndexWriter(this.directory, this.analyzer, !exists, IndexWriter.MaxFieldLength.UNLIMITED);
-        this.reader = IndexReader.open(this.idxDir.toString());
+        this.analyzer = new StandardAnalyzer();
+        this.writer = this.createWriter(this.directory, this.analyzer, !exists);
+        this.reader = IndexReader.open(this.directory, true);
         this.searcher = new IndexSearcher(this.reader);
         this.parser = new QueryParser("text", this.analyzer);
         this.seqid = new SequenceId(this.idxDir.toString() + File.separator + Config.SEQID);
+    }
+
+    private IndexWriter
+    createWriter(Directory directory, Analyzer analyzer, boolean create)
+    throws CorruptIndexException, IOException, LockObtainFailedException
+    {
+        IndexWriter ret = new IndexWriter(directory, analyzer, create, IndexWriter.MaxFieldLength.UNLIMITED);
+        ret.setUseCompoundFile(false);
+        ret.setRAMBufferSizeMB(Config.MAXRAM);
+        return ret;
     }
 
     public void

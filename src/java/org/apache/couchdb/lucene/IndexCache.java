@@ -21,7 +21,7 @@ extends LinkedHashMap<String, Index>
     {
         if(this.size() > this.max_size)
         {
-            Index idx = (Index) entry.getValue();
+            Index idx = entry.getValue();
             idx.close();
             return true;
         }
@@ -35,7 +35,7 @@ extends LinkedHashMap<String, Index>
         Iterator<Index> iter = this.values().iterator();
         while(iter.hasNext())
         {
-            Index idx = (Index) iter.next();
+            Index idx = iter.next();
             idx.close();
         }
     }

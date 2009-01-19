@@ -88,29 +88,43 @@ Database
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
-            writer.write(body);
-            writer.flush();
-            writer.close();
+            
+            try
+            {
+                writer.write(body);
+                writer.flush();
+            }
+            
+            finally
+            {
+                writer.close();
+            }
         }
 
+        StringWriter data = new StringWriter();
         DataInputStream dis = new DataInputStream(conn.getInputStream());
         InputStreamReader isr = new InputStreamReader(dis);
         BufferedReader reader = new BufferedReader(isr);
 
-        if(conn.getResponseCode() != 200)
+        try
         {
-            throw new IOException("Invalid response code from server: " + conn.getResponseCode());
+            if(conn.getResponseCode() != 200)
+            {
+                throw new IOException("Invalid response code from server: " + conn.getResponseCode());
+            }
+
+            String line = null;
+            do
+            {
+                line = reader.readLine();
+                data.write(line);
+            } while(line != null);
         }
-
-        StringWriter data = new StringWriter();
-        String line = null;
-        do
+        
+        finally
         {
-            line = reader.readLine();
-            data.write(line);
-        } while(line != null);
-
-        reader.close();
+            reader.close();
+        }
 
         return data.toString();
     }
