@@ -56,8 +56,7 @@ Example `_design` document:
         },
     }
 
-**IMPORTANT**
-1. You **must** `emit(doc._id, value_to_index)`. If you don't emit a key that is the docid, nothing will get indexed.
+**IMPORTANT** You **must** `emit(doc._id, value_to_index)`. If you don't emit a key that is the docid, nothing will get indexed.
 
 Querying
 --------
