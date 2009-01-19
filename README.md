@@ -70,12 +70,12 @@ Parameters:
 
 The really cool part is that `q` should specify the views you want to search using the QueryParser syntax. For instance, given the example `_design` document above, you can search for things like `foo:value AND bar:pumpkin` and you get back the expected results.
 
-Examples:
+Example URLs:
 
 * `http://127.0.0.1:5984/db_name/_fti?q=foo:query`
 * `http://127.0.0.1:5984/db_name/_fti?q=foo:plankton+bar:goat&limit=1&skip=1`
 
-Results:
+Example Results:
 
     {
         "total_rows":2,
