@@ -243,6 +243,7 @@ public class JSONObject {
      * @param map - A map with Key-Bean data.
      * @param includeSuperClass - Tell whether to include the super class properties.
      */
+    @SuppressWarnings("unchecked")
     public JSONObject(Map map, boolean includeSuperClass) {
        	this.map = new HashMap();
        	if (map != null){
@@ -294,6 +295,7 @@ public class JSONObject {
         populateInternalMap(bean, includeSuperClass);
     }
     
+    @SuppressWarnings("unchecked")
     private void populateInternalMap(Object bean, boolean includeSuperClass){
     	Class klass = bean.getClass();
     	
@@ -351,6 +353,7 @@ public class JSONObject {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private boolean isStandardProperty(Class clazz) {
     	return clazz.isPrimitive()                  ||
     		clazz.isAssignableFrom(Byte.class)      ||
@@ -697,7 +700,8 @@ public class JSONObject {
      *
      * @return An iterator of the keys.
      */
-    public Iterator keys() {
+    @SuppressWarnings("unchecked")
+    public Iterator<String> keys() {
         return this.map.keySet().iterator();
     }
 
@@ -1047,6 +1051,7 @@ public class JSONObject {
      * @throws JSONException If the value is non-finite number
      *  or if the key is null.
      */
+    @SuppressWarnings("unchecked")
     public JSONObject put(String key, Object value) throws JSONException {
         if (key == null) {
             throw new JSONException("Null key.");
@@ -1180,6 +1185,7 @@ public class JSONObject {
      *
      * @return An iterator of the keys.
      */
+    @SuppressWarnings("unchecked")
     public Iterator sortedKeys() {
       return new TreeSet(this.map.keySet()).iterator();
     }
