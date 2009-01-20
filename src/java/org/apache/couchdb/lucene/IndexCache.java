@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@SuppressWarnings("serial")
 public class
 IndexCache
 extends LinkedHashMap<String, Index>

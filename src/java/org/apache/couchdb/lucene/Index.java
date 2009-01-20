@@ -145,7 +145,7 @@ Index
     index(int update_seq)
     throws CorruptIndexException, IOException, JSONException, NoSuchAlgorithmException
     {
-        List views = this.getViewNames(update_seq);
+        List<String> views = this.getViewNames(update_seq);
 
         int curr_seq = this.seqid.get();
         
@@ -153,7 +153,7 @@ Index
         {
             JSONArray updates = db.nextBySequence(this.seqid.get(), update_seq, Config.BULKSIZE).getJSONArray("rows");
 
-            List docids = new ArrayList<String>();
+            List<String> docids = new ArrayList<String>();
             Map<String, Document> documents = new HashMap<String, Document>();
 
             // List updated docids.
@@ -204,7 +204,7 @@ Index
         }
         
         
-        List ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<String>();
         JSONObject views = ddoc.optJSONObject("views");
         
         if(views == null)
@@ -212,7 +212,7 @@ Index
             throw new JSONException("No views member defined in '_design/" + Config.DESIGN + "'");
         }
 
-        Iterator iter = views.keys();
+        Iterator<String> iter = views.keys();
         while(iter.hasNext())
         {
             ret.add((String) iter.next());            

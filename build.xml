@@ -27,7 +27,7 @@
     <property name="javac.optimize" value="on" />
     <property name="javac.deprecation" value="on" />
     <property name="javac.version" value="1.5" />
-    <property name="javac.args" value="" />
+    <property name="javac.args" value="-Xlint" />
 
     <!-- ====================================================== -->
     <!-- Lib Names                                              -->
