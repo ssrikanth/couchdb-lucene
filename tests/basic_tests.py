@@ -53,3 +53,9 @@ class BasicTests(unittest.TestCase):
         resp, data = self.db.resource.get("_fti", q="foo:plankton AND bar:goat")
         self.assertEqual(data["total_rows"], 1)
         self.assertEqual(data["rows"][0]["id"], "test1")
+
+    def no_docs_test(self):
+        docs = [{"foo": "This is document %d" % i} for i in range(10)]
+        self.db.update(docs)
+        resp, data = self.db.resource.get("_fti", q="foo:document", wait=False)
+        self.assertEqual(data, {"total_rows": 0, "offset": 0, "rows": []})

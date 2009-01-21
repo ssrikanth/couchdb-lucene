@@ -129,6 +129,11 @@ extends ThreadPoolExecutor
             this.searcher = new IndexSearcher(this.reader);
         }
 
+        if(this.reader.numDocs() == 0)
+        {
+            return "{\"code\": 200, \"json\": {\"total_rows\": 0, \"offset\": 0, \"rows\": []}}";
+        }
+
         Query q = this.parser.parse(info.getQuery());
         TopDocs hits = this.searcher.search(q, null, info.getSkip() + info.getLimit(), new Sort(Config.FIELD_DOCID));
     
