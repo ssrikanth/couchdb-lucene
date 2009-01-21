@@ -66,6 +66,8 @@ Parameters:
 1. `q`: A query string. This is processed by Lucene's [QueryParser][parser]
 1. `limit`: Limit the number of results returned.
 1. `skip`: Skip over the first N results.
+1. `wait`: (boolean, default false) Waits until the indexing catches up to the database update_seq that was passed with
+this request.
 
 The really cool part is that `q` should specify the views you want to search using the QueryParser syntax. For instance, given the example `_design` document above, you can search for things like `foo:value AND bar:pumpkin` and you get back the expected results.
 
