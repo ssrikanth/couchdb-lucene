@@ -14,7 +14,7 @@ Main
     {
         try
         {
-            IndexCache cache = new IndexCache(Config.MAXDBS);
+            IndexExecutor exec = new IndexExecutor();
             BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
             String data = null;
 
@@ -24,25 +24,13 @@ Main
                 
                 try
                 {
-                    JSONObject req = new JSONObject(data);
-                    String dbname = req.getJSONObject("info").getString("db_name");
-                    int update_seq = req.getJSONObject("info").getInt("update_seq");
-                    String query = req.getJSONObject("query").getString("q");
-                    int count = req.getJSONObject("query").optInt("limit", 25);
-                    int offset = req.getJSONObject("query").optInt("skip", 0);
-
-                    Index idx = (Index) cache.get(dbname);
-                    if(idx == null)
-                    {
-                        idx = new Index(dbname);
-                        cache.put(dbname, idx);
-                    }
-                    
-                    ret = idx.query(update_seq, query, count, offset);
+                    QueryInfo info = new QueryInfo(new JSONObject(data));
+                    ret = exec.query(info);
                 }
                 
                 catch(Exception ex)
                 {
+                    System.err.println("Failed to run query.");
                     ex.printStackTrace(System.err);
                     ret = new JSONStringer().object()
                                 .key("code").value(500)
@@ -57,7 +45,7 @@ Main
                 }
             }
             
-            cache.closeAll();
+            
         }
         
         catch(Exception exc)

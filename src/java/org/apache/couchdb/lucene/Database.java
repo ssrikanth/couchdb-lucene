@@ -22,39 +22,37 @@ public class
 Database
 {
     private final URL url;
-    private final String dbname;
     
-    public Database(URL url, String dbname)
+    public
+    Database(URL url)
     {
         this.url = url;
-        this.dbname = dbname;
     }
 
     public JSONObject
-    getDoc(String docid)
+    getDoc(String dbname, String docid)
     throws IOException, JSONException, MalformedURLException
     {
         docid = URLEncoder.encode(docid, "UTF-8");
-        String data = fetch(new URL(this.url, "/" + this.dbname + "/" + docid));
+        String data = fetch(new URL(this.url, "/" + dbname + "/" + docid));
         return new JSONObject(data);
     }
     
     public JSONObject
-    nextBySequence(int curr_seq, int last_seq, int count)
+    nextBySequence(String dbname, int curr_seq, int count)
     throws IOException, JSONException, MalformedURLException
     {
-        String path = "/" + this.dbname + "/_all_docs_by_seq?startkey="
-                        + curr_seq + "&endkey=" + last_seq + "&limit=" + count;
+        String path = "/" + dbname + "/_all_docs_by_seq?startkey="
+                        + curr_seq + "&limit=" + count;
 
-        URL loc = new URL(this.url, path);
-        return new JSONObject(fetch(loc));
+        return new JSONObject(fetch(new URL(this.url, path)));
     }
 
     public JSONObject
-    view(String view, List<String> docids)
+    view(String dbname, String view, List<String> docids)
     throws IOException, JSONException, MalformedURLException
     {
-        URL loc = new URL(this.url, "/" + this.dbname + "/_view/" + view + "?reduce=false");
+        URL loc = new URL(this.url, "/" + dbname + "/_view/" + view + "?reduce=false");
         
         JSONStringer out = new JSONStringer();
         out.object().key("keys").array();
