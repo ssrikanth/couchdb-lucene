@@ -60,6 +60,6 @@ QueryInfo
     getWait()
     throws JSONException
     {
-        return info.getJSONObject("query").optBoolean("wait", false);
+        return info.getJSONObject("query").optBoolean("wait", true);
     }
 }

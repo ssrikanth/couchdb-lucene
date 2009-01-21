@@ -311,9 +311,8 @@ extends ThreadPoolExecutor
         BufferedWriter writer = null;
         try
         {
-            JSONObject obj = new JSONObject(state);
+            String data = new JSONObject(state).toString();
             writer = new BufferedWriter(new FileWriter(idxDir.toString() + File.separator + Config.LUCENE_STATE_FILE));
-            String data = obj.toString();
             writer.write(data, 0, data.length());
         }
         
