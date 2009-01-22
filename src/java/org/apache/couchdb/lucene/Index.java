@@ -91,7 +91,12 @@ extends Thread
     query(QueryInfo info)
     throws CorruptIndexException, InterruptedException, IOException,
             JSONException, NoSuchAlgorithmException, ParseException
-    {        
+    {
+        if((info.getDestroy() || info.getDebug()) && !Config.DEBUG_ENABLED)
+        {
+            return "{\"code\": 500, \"body\": \"debug mode disabled\"}";
+        }
+        
         if(info.getDestroy() && Config.DEBUG_ENABLED)
         {
             System.err.println("DEBUG CALL: Destroying database");
