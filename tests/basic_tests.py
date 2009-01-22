@@ -18,11 +18,12 @@ class BasicTests(unittest.TestCase):
             "bar": {"map": "function(doc) {if(doc.bar) emit(doc._id, doc.bar);}"}
         }}
         self.db["_design/lucene"] = desdoc
+        self.db.resource.get("_fti", destroy=True)
     
     def basic_tests(self):
         docs = [{"foo": "This is document %d" % i} for i in range(10)]
         self.db.update(docs)
-        resp, data = self.db.resource.get("_fti", q="foo:document")
+        resp, data = self.db.resource.get("_fti", q="foo:document", debug=True)
         self.assertEqual(data["total_rows"], 10)
         self.assertEqual(data["offset"], 0)
         self.assertEqual(isinstance(data["rows"], list), True)
@@ -31,7 +32,7 @@ class BasicTests(unittest.TestCase):
     def multi_test(self):
         self.db["test1"] = {"foo": "plankton", "bar": "goat"}
         self.db["test2"] = {"foo": "plankton"}
-        resp, data = self.db.resource.get("_fti", q="foo:plankton")
+        resp, data = self.db.resource.get("_fti", q="foo:plankton", debug=True)
         self.assertEqual(data["total_rows"], 2)
         for row in data["rows"]:
             self.assertEqual("id" in row, True)
@@ -39,7 +40,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(row["id"] in ["test1", "test2"], True)
             self.assertEqual(row["score"] > 0, True)
         #Testing scoring
-        resp, data = self.db.resource.get("_fti", q="foo:plankton bar:goat")
+        resp, data = self.db.resource.get("_fti", q="foo:plankton bar:goat", debug=True)
         self.assertEqual(data["total_rows"], 2)
         t1score = 0.0
         t2score = 0.0
@@ -50,12 +51,6 @@ class BasicTests(unittest.TestCase):
                 t2score = row["score"]
         self.assertEqual(t1score > t2score, True)
         #Testing limiting
-        resp, data = self.db.resource.get("_fti", q="foo:plankton AND bar:goat")
+        resp, data = self.db.resource.get("_fti", q="foo:plankton AND bar:goat", debug=True)
         self.assertEqual(data["total_rows"], 1)
         self.assertEqual(data["rows"][0]["id"], "test1")
-
-    def no_docs_test(self):
-        docs = [{"foo": "This is document %d" % i} for i in range(10)]
-        self.db.update(docs)
-        resp, data = self.db.resource.get("_fti", q="foo:document", wait=False)
-        self.assertEqual(data, {"total_rows": 0, "offset": 0, "rows": []})

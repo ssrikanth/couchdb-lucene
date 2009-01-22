@@ -57,9 +57,16 @@ QueryInfo
     }
     
     boolean
-    getWait()
+    getDebug()
     throws JSONException
     {
-        return info.getJSONObject("query").optBoolean("wait", true);
+        return info.getJSONObject("query").optString("debug", "true").equalsIgnoreCase("true");
+    }
+    
+    boolean
+    getDestroy()
+    throws JSONException
+    {
+        return info.getJSONObject("query").optString("destroy", "").equalsIgnoreCase("true");
     }
 }

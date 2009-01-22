@@ -14,7 +14,9 @@ Main
     {
         try
         {
-            IndexExecutor exec = new IndexExecutor();
+            Index idx = new Index();
+            idx.start();
+            
             BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
             String data = null;
 
@@ -25,7 +27,7 @@ Main
                 try
                 {
                     QueryInfo info = new QueryInfo(new JSONObject(data));
-                    ret = exec.query(info);
+                    ret = idx.query(info);
                 }
                 
                 catch(Exception ex)
@@ -44,8 +46,6 @@ Main
                     System.out.println(ret);
                 }
             }
-            
-            
         }
         
         catch(Exception exc)
