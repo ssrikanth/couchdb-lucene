@@ -44,6 +44,7 @@ Main
                 {
                     // Send the response
                     System.out.println(ret);
+                    System.out.flush();
                 }
             }
         }
